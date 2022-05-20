@@ -60,6 +60,7 @@ public class Main {
 		Matcher file = fileType.matcher("../images/" + inputFilename);
 		boolean match = file.find();
 		ArrayList<String[]> fileLines = new ArrayList<>();
+		int length = 0;
 		int width = 0;
 		if (match) {
 			ArrayList<String> numbers = new ArrayList<String>();
@@ -77,7 +78,9 @@ public class Main {
 					continue;
 				} else if (wait < 3) {
 					if (wait == 1) {
-						width = Integer.parseInt(line.split("\\s+")[0]);
+						String[] dims = line.split("\\s+");
+						length = Integer.parseInt(dims[0]) * 3;
+						width = Integer.parseInt(dims[1]);
 					} 
 					preface.append(line).append("\n");
 					wait++;
@@ -88,23 +91,27 @@ public class Main {
 					// System.out.println(Arrays.asList(lineArr));
 				}
 			}
-			// System.out.println(preface + "\n");
+			// System.out.println(numbers.size() + "\n");
+			// System.exit(13);
 			br.close();
-			String[] fileLine = new String[width * 3];
+			String[] fileLine = new String[length];
 			int column = 0;
-			for (String number : numbers) {
-				if (column >= width * 3) {
+			for (int i = 0; i < numbers.size(); i++) {
+				if (column >= length || i == numbers.size()) {
 					column = 0;
 					fileLines.add(fileLine);
-					// for (int i = 0; i < fileLine.length; i++) {
-					// 	System.out.print(fileLine[i]+ " ");
+					// for (int col = 0; col < fileLine.length; col++) {
+					// 	System.out.print(fileLine[col]+ " ");
 					// }
-					fileLine = new String[width * 3];
+					fileLine = new String[length];
 				}
-				fileLine[column] = number;
+				fileLine[column] = numbers.get(i);
 				column++;
 			}
 		} 
+		// System.out.print(fileLines.size() + " " + fileLines.get(0).length + "\n");
+		// System.exit(12);
+
 		QuadTree QT = new QuadTree(fileLines);
 		// if (outline) {
 		// 	QT.outline(false).toPPM(String.format("../images/input%s.ppm", outlineArg), preface.toString());
