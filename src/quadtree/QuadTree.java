@@ -23,7 +23,6 @@ public class QuadTree {
     private boolean node2Null = true;
     private boolean node3Null = true;
     private boolean node4Null = true;
-    private ArrayList<QuadTree> nodes = null;
 
 
     public QuadTree(ArrayList<String[]> fileLines) {
@@ -143,7 +142,6 @@ public class QuadTree {
                     node4 = new QuadTree(node4FileLines);
                 }
             }
-            nodes = new ArrayList<QuadTree>(Arrays.asList(node1, node2, node3, node4));
             node1Null = (node1 == null);
             node2Null = (node2 == null);
             node3Null = (node3 == null);
@@ -337,10 +335,10 @@ public class QuadTree {
                     r = 255 - r;
                     g = 255 - g;
                     b = 255 - b;
-                } else if (type.equals("Tint")) {
-                    r = (int) (((double) r/255) * 225);
-                    g = (int) (((double) g/255) * 6);
-                    b = (int) (((double) b/255) * 0);
+                } else if (type.equals("BlueLight")) {
+                    r = (int) (((double) r/255) * 255);
+                    g = (int) (((double) g/255) * 255);
+                    b = (int) (((double) b/255) * 150);
                 }
                 fileLineFilter[col] = String.valueOf(r);
                 fileLineFilter[col+1] = String.valueOf(g);
@@ -433,26 +431,27 @@ public class QuadTree {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("No. of lines: ").append(width).append("\n");
+        sb.append("Number of lines: ").append(width).append("\n");
         if (width != 0) {
-            sb.append("No. of strings per line: ").append(length).append("\n");
+            sb.append("Number of pixels per line: ").append(length/3).append("\n");
         }
+        sb.append("Total number of pixels: ").append(pixels).append("\n");
         sb.append("meanColor: (").append(meanColor[0]).append(", ").append(meanColor[1]).append(", ").append(meanColor[2]).append(")\n");
-        sb.append("Pixels: ").append(pixels).append("\n");
         sb.append("Outline? ").append(outline).append("\n");
         sb.append("Nodes: ");
-        if (node1 != null) {
+        if (!node1Null) {
             sb.append(" node1 ");
         }
-        if (node2 != null) {
+        if (!node2Null) {
             sb.append(" node2 ");
         }
-        if (node3 != null) {
+        if (!node3Null) {
             sb.append(" node3 ");
         }
-        if (node4 != null) {
+        if (!node4Null) {
             sb.append(" node4 ");
         }
+        sb.append("\n");
         return sb.toString();
     }
 }

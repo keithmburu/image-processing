@@ -112,7 +112,7 @@ public class Main {
 				QT.edge_detect().toPPM(String.format("../images/%s-e.ppm", outputFilename), preface.toString());
 				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g.ppm", outputFilename), preface.toString());
 				QT.filter("Negative").toPPM(String.format("../images/%s-f-n.ppm", outputFilename), preface.toString());
-				QT.filter("Tint").toPPM(String.format("../images/%s-f-t.ppm", outputFilename), preface.toString());
+				QT.filter("BlueLight").toPPM(String.format("../images/%s-f-t.ppm", outputFilename), preface.toString());
 				break;
 			case "Compression":
 				edgeDetection = false;
@@ -124,7 +124,7 @@ public class Main {
 			case "Filter":
 				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g.ppm", outputFilename), preface.toString());
 				QT.filter("Negative").toPPM(String.format("../images/%s-f-n.ppm", outputFilename), preface.toString());
-				QT.filter("Tint").toPPM(String.format("../images/%s-f-t.ppm", outputFilename), preface.toString());
+				QT.filter("BlueLight").toPPM(String.format("../images/%s-f-t.ppm", outputFilename), preface.toString());
 				break;
 			default:
 				System.out.println("Undefined task!");;
