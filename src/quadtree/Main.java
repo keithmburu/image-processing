@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Main {
+public class Main { 
 
 	public static void main(String[] args) throws IOException {
 
@@ -113,17 +113,19 @@ public class Main {
 		// }
 		switch(task) {
 			case "All":
-				QT.compress(0.5, outline).toPPM(String.format("../images/%s-c%s.ppm", outputFilename, outlineArg), preface.toString());
-				QT.edge_detect(outline).toPPM(String.format("../images/%s-e%s.ppm", outputFilename, outlineArg), preface.toString());
+				boolean edgeDetection = false;
+				QT.compress(0.5, edgeDetection, outline).toPPM(String.format("../images/%s-c%s.ppm", outputFilename, outlineArg), preface.toString());
+				QT.edge_detect().toPPM(String.format("../images/%s-e%s.ppm", outputFilename, outlineArg), preface.toString());
 				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g%s.ppm", outputFilename, outlineArg), preface.toString());
 				QT.filter("Negative").toPPM(String.format("../images/%s-f-n%s.ppm", outputFilename, outlineArg), preface.toString());
 				QT.filter("Tint").toPPM(String.format("../images/%s-f-t%s.ppm", outputFilename, outlineArg), preface.toString());
 				break;
 			case "Compression":
-				QT.compress(0.5, outline).toPPM(String.format("../images/%s-c%s.ppm", outputFilename, outlineArg), preface.toString());
+				edgeDetection = false;
+				QT.compress(0.5, edgeDetection, outline).toPPM(String.format("../images/%s-c%s.ppm", outputFilename, outlineArg), preface.toString());
 				break;
 			case "Edge Detection":
-				QT.edge_detect(outline).toPPM(String.format("../images/%s-e%s.ppm", outputFilename, outlineArg), preface.toString());
+				QT.edge_detect().toPPM(String.format("../images/%s-e%s.ppm", outputFilename, outlineArg), preface.toString());
 				break;
 			case "Filter":
 				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g%s.ppm", outputFilename, outlineArg), preface.toString());

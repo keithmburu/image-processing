@@ -1,12 +1,11 @@
 package quadtree;
-
+ 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.swing.plaf.synth.SynthOptionPaneUI;
 
 public class QuadTree {
 
@@ -33,10 +32,8 @@ public class QuadTree {
         }
         else {
             this.fileLines = fileLines;
-
             // System.out.println("fileLines.size() = " + fileLines.size());
             // System.out.println("fileLines.get(0).length = " + fileLines.get(0).length);
-
 
             int Rtotal = 0;
             int Gtotal = 0;
@@ -158,32 +155,8 @@ public class QuadTree {
         }
     }
 
-    public QuadTree(ArrayList<QuadTree> nodes, String constructor2) {
-        this.nodes = nodes;
-        node1 = nodes.get(0);
-        node2 = nodes.get(1);
-        node3 = nodes.get(2);
-        node4 = nodes.get(3);
-        node1Null = (nodes.get(0) == null);
-        node2Null = (nodes.get(1) == null);
-        node3Null = (nodes.get(2) == null);
-        node4Null = (nodes.get(3) == null);
-    }
 
-
-    public QuadTree outline(boolean useConstructor2) {
-        // QuadTree outlined;
-        // if (useConstructor2) {
-        //     outlined = new QuadTree(nodes, "constructor2");
-        // } else {
-        //     outlined = new QuadTree(fileLines);
-        // }
-        // outlined = outlined.outline_helper();
-        return outline_helper();
-    }
-
-
-    public QuadTree outline_helper() {
+    public QuadTree outline() {
         if (fileLines != null) {
             if (fileLines.size() == 1 && fileLines.get(0).length == 3) {
                 fileLines.set(0, new String[]{"0", "0", "0"});
@@ -214,47 +187,46 @@ public class QuadTree {
             return this;
         } else {
             if (!node1Null) {
-                node1 = node1.outline_helper();
+                node1 = node1.outline();
             }
             if (!node2Null) {
-                node2 = node2.outline_helper();
+                node2 = node2.outline();
             }
             if (!node3Null) {
-                node3 = node3.outline_helper();
+                node3 = node3.outline();
             }
             if (!node4Null) {
-                node4 = node4.outline_helper();
+                node4 = node4.outline();
             }
             return this;
         }
     }
 
 
-    public QuadTree compress(double compressionLevel, boolean outline) {
-        QuadTree compressedQT = compress_helper(compressionLevel);
+    public QuadTree compress(double compressionLevel, boolean edgeDetection,    boolean outline) {
+        QuadTree compressedQT = compress_helper(compressionLevel, edgeDetection);
         if (outline) {
-            return compressedQT.outline(true);
+            return compressedQT.outline();
         } else {
             return compressedQT;
         }
     }
 
-
-    public QuadTree compress_helper(double compressionLevel) {
+    public QuadTree compress_helper(double compressionLevel, boolean edgeDetection) {
         QuadTree compressedQT = new QuadTree(fileLines);
         if (compressedQT.fileLines.size() == 1 && compressedQT.fileLines.get(0).length == 3) {
             return compressedQT;
         } 
 
         // if (Math.abs(1/pixels - compressionLevel) <=) {}
-        double errthreshold = 1000;
+        double errthreshold = 100;
         int squaredError = 0;
         
         for (int line = 0; line < compressedQT.fileLines.size(); line++) {
-            for (int col= 0; col< compressedQT.fileLines.get(line).length - 2; col+= 3) {
+            for (int col= 0; col < compressedQT.fileLines.get(line).length - 2; col+= 3) {
                 int r = (!compressedQT.fileLines.get(line)[col].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line) [col]) : 0;
-                int g = (!compressedQT.fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+ 1]) : 0;
-                int b = (!compressedQT.fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+ 2]) : 0;
+                int g = (!compressedQT.fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+1]) : 0;
+                int b = (!compressedQT.fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+2]) : 0;
                 squaredError += squared_error(r, g, b);
             }
         }
@@ -263,23 +235,25 @@ public class QuadTree {
 
         if (meanSquaredError > errthreshold) {
             if (!compressedQT.node1Null) {
-                compressedQT.node1 = compressedQT.node1.compress_helper(compressionLevel);
+                compressedQT.node1 = compressedQT.node1.compress_helper(compressionLevel, edgeDetection);
             }
             if (!compressedQT.node2Null) {
-                compressedQT.node2 = compressedQT.node2.compress_helper(compressionLevel);
+                compressedQT.node2 = compressedQT.node2.compress_helper(compressionLevel, edgeDetection);
             }
             if (!compressedQT.node3Null) {
-                compressedQT.node3 = compressedQT.node3.compress_helper(compressionLevel);
+                compressedQT.node3 = compressedQT.node3.compress_helper(compressionLevel, edgeDetection);
             }
             if (!compressedQT.node4Null) {
-                compressedQT.node4 = compressedQT.node4.compress_helper(compressionLevel);
+                compressedQT.node4 = compressedQT.node4.compress_helper(compressionLevel, edgeDetection);
             }
         } else {
-            for (int line = 0; line < compressedQT.fileLines.size(); line++) {
-                for (int col = 0; col < compressedQT.fileLines.get(line).length - 2; col += 3) {
-                    compressedQT.fileLines.get(line)[col] = String.valueOf(meanColor[0]);
-                    compressedQT.fileLines.get(line)[col + 1] = String.valueOf(meanColor[1]);
-                    compressedQT.fileLines.get(line)[col + 2] = String.valueOf(meanColor[2]);
+            if (!edgeDetection) {
+                for (int line = 0; line < compressedQT.fileLines.size(); line++) {
+                    for (int col = 0; col < compressedQT.fileLines.get(line).length - 2; col += 3) {
+                        compressedQT.fileLines.get(line)[col] = String.valueOf(meanColor[0]);
+                        compressedQT.fileLines.get(line)[col+1] = String.valueOf(meanColor[1]);
+                        compressedQT.fileLines.get(line)[col+2] = String.valueOf(meanColor[2]);
+                    }
                 }
             }
             compressedQT.node1 = null;
@@ -300,49 +274,55 @@ public class QuadTree {
     }
 
 
-    public QuadTree edge_detect(boolean outline) {
-        QuadTree edgeDetectQT = compress(0.5, outline);
+    public QuadTree edge_detect() {
+        boolean edgeDetection = true;
+        boolean outline = false;
+        QuadTree edgeDetectQT = compress(0.5, edgeDetection, outline);
         edgeDetectQT.edge_detect_helper();
         return edgeDetectQT;
     }
 
     public void edge_detect_helper() {
         // nodes with higher compression to be set to black
-        int threshold = 10;
-        if (pixels > threshold) {
-            for (int line = 0; line < fileLines.size(); line++) {
-                for (int col = 0; col < fileLines.get(line).length; col++) {
-                    fileLines.get(line)[col] = "0";
+        int threshold = 1;
+        if (node1Null && node2Null && node3Null && node4Null) {
+            if (pixels > threshold) {
+                for (int line = 0; line < fileLines.size(); line++) {
+                    for (int col = 0; col < fileLines.get(line).length; col++) {
+                        fileLines.get(line)[col] = "0";
+                    }
                 }
-            }
-        } else if (pixels <= threshold) {
-            for (int line = 0; line < fileLines.size(); line++) {
-                for (int col = 0; col < fileLines.get(line).length-2; col+=3) {
-                    int r = (!fileLines.get(line)[col].equals("")) ? Integer.parseInt(fileLines.get(line)[col]) : 0;
-                    int g = (!fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(fileLines.get(line)[col+1]) : 0;
-                    int b = (!fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(fileLines.get(line)[col+2]) : 0;
-                    int rDiff = Math.abs(r - meanColor[0]);
-                    int gDiff = Math.abs(g - meanColor[1]);
-                    int bDiff = Math.abs(b - meanColor[2]);
-                    int meanDiff = (rDiff + gDiff + bDiff) / 3;
-                    fileLines.get(line)[col] = String.valueOf(meanDiff);
-                    fileLines.get(line)[col+1] = String.valueOf(meanDiff);
-                    fileLines.get(line)[col+2] = String.valueOf(meanDiff);
-                    // fileLines.get(line)[col] = "255";
+            } else if (pixels <= threshold) {
+                for (int line = 0; line < fileLines.size(); line++) {
+                    for (int col = 0; col < fileLines.get(line).length-2; col+=3) {
+                        int r = (!fileLines.get(line)[col].equals("")) ? Integer.parseInt(fileLines.get(line)[col]) : 0;
+                        int g = (!fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(fileLines.get(line)[col+1]) : 0;
+                        int b = (!fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(fileLines.get(line)[col+2]) : 0;
+                        int rDiff = Math.abs(r - meanColor[0]);
+                        int gDiff = Math.abs(g - meanColor[1]);
+                        int bDiff = Math.abs(b - meanColor[2]);
+                        int meanDiff = (rDiff + gDiff + bDiff) / 3;
+                        int newVal = ((int) Math.pow(meanDiff, -2) + 100) % 255;
+                        fileLines.get(line)[col] = String.valueOf(newVal);
+                        fileLines.get(line)[col+1] = String.valueOf(newVal);
+                        fileLines.get(line)[col+2] = String.valueOf(newVal);
+                        // System.out.print(fileLines.get(line)[col] + " " + fileLines.get(line)[col+1] + " " + fileLines.get(line)[col+2] + " ");
+                    }
                 }
+            } 
+        } else {
+            if (!node1Null) {
+                node1.edge_detect_helper();
             }
-        } 
-        if (!node1Null) {
-            node1.edge_detect_helper();
-        }
-        if (!node2Null) {
-            node2.edge_detect_helper();
-        }
-        if (!node3Null) {
-            node3.edge_detect_helper();
-        }
-        if (!node4Null) {
-            node4.edge_detect_helper();
+            if (!node2Null) {
+                node2.edge_detect_helper();
+            }
+            if (!node3Null) {
+                node3.edge_detect_helper();
+            }
+            if (!node4Null) {
+                node4.edge_detect_helper();
+            }
         }
     }
 
@@ -351,7 +331,7 @@ public class QuadTree {
         ArrayList<String[]> fileLinesFilter = new ArrayList<String[]>();
         for (int line = 0; line < fileLines.size(); line++) {
             String[] fileLineFilter = new String[fileLines.get(line).length];
-            for (int col = 0; col < fileLines.get(line).length - 2; col += 3) {
+            for (int col = 0; col < fileLines.get(line).length-2; col += 3) {
                 int r = (!fileLines.get(line)[col].equals("")) ? Integer.parseInt(fileLines.get(line)[col]) : 0;
                 int g = (!fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(fileLines.get(line)[col+1]) : 0;
                 int b = (!fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(fileLines.get(line)[col+2]) : 0;
@@ -394,17 +374,11 @@ public class QuadTree {
 
 
     public String toPPM_helper() {
-        // for (int line = 0; line < node1.fileLines.size(); line++) {
-        //     for (int col = 0; col < node1.fileLines.get(line).length - 2; col += 3) {
-        //         System.out.println(Arrays.asList(node1.fileLines.get(line)));
-        //     }
-        // }
         String[] quad1 = {""};
         String[] quad2 = {""};
         String[] quad3 = {""};
         String[] quad4 = {""};
         if (node1Null && node2Null && node3Null && node4Null) {
-            // System.out.println(Arrays.asList(fileLines.get(0)));
             StringBuilder f = new StringBuilder();
             for (int line = 0; line < fileLines.size(); line++) {
                 for (int col = 0; col < fileLines.get(line).length; col++) {   
@@ -412,39 +386,24 @@ public class QuadTree {
                 }
                 f.append("\n");
             }
-            // System.out.println(f.toString() + "\n");
             return f.toString();
         }
         int lines = 0;
         if (!node1Null) {
             lines += node1.fileLines.size();
             quad1 = node1.toPPM_helper().split("\n");
-            // System.out.println(Arrays.asList(quad1));
-        } else {
-            // System.out.println("node1 is null");
-        }
+        } 
         if (!node2Null) {
             quad2 = node2.toPPM_helper().split("\n");
-        } else {
-            // System.out.println("node2 is null");
         }
         if (!node3Null) {
             lines += node3.fileLines.size();
             quad3 = node3.toPPM_helper().split("\n");
-        } else {
-            // System.out.println("node3 is null");
         } 
         if (!node4Null) {
             quad4 = node4.toPPM_helper().split("\n");
-        } else {
-            // System.out.println("node4 is null");
         } 
-        // for (String pxl : quad1) {
-        //     System.out.print(pxl + " ");
-        // }
-        // System.out.println("\n");
         StringBuilder sb = new StringBuilder();
-        // int half = (fileLines.size() % 2 == 0) ? (fileLines.size() / 2) - 1 : (fileLines.size() - 1) / 2;
 
         for (int line = 0; line < lines; line++) {
             String lineA = "";
@@ -452,48 +411,26 @@ public class QuadTree {
             
             if (line < quad1.length) {
                 if (!quad1[0].equals("")) {
-                    // System.out.println(quad1.length + " " + line + " " + node1.fileLines.get(line).length);
                     String[] quad1Line = quad1[line].split(" ");
-                    // if (quad1Line.length >= 9) {
-                    //     quad1Line = Arrays.copyOfRange(quad1Line, 0, quad1Line.length-3);
-                    // }
                     lineA = String.join(" ", quad1Line) + " ";
-                } else {
-                    // System.out.println("quad1");
                 }
 
                 if (!quad2[0].equals("")) {
                     String[] quad2Line = quad2[line].split(" ");
-                    // if (quad2Line.length >= 9) {
-                    //     quad2Line = Arrays.copyOfRange(quad2Line, 3, quad2Line.length);
-                    // }
                     lineB = String.join(" ", quad2Line) + " ";
-                }  else {
-                    // System.out.println("quad2");
                 }
             } else {
                 int line34 = line - (quad1.length);
                 if (!quad3[0].equals("")) {
                     String[] quad3Line = quad3[line34].split(" ");
-                    // if (quad3Line.length >= 9) {
-                    //     quad3Line = Arrays.copyOfRange(quad3Line, 0, quad3Line.length-3);
-                    // }
                     lineA = String.join(" ", quad3Line) + " ";
-                }  else {
-                    // System.out.println("quad3");
-                }
+                } 
 
                 if (!quad4[0].equals("")) {
                     String[] quad4Line = quad4[line34].split(" ");
-                    // if (quad4Line.length >= 9) {
-                    //     quad4Line = Arrays.copyOfRange(quad4Line, 3, quad4Line.length);
-                    // }
                     lineB = String.join(" ", quad4Line) + " ";
-                }  else {
-                    // System.out.println("quad4");
-                }
+                }  
             }  
-
             sb.append(lineA).append(lineB).append('\n');
 
             // System.out.println(lineA);
