@@ -55,12 +55,7 @@ public class QuadTree {
             meanColor[1] = Gaverage;
             meanColor[2] = Baverage;
 
-            if (width == 1 && length == 3) {
-                node1 = null;
-                node2 = null;
-                node3 = null;
-                node4 = null;
-            } else {
+            if (width != 1 || length != 3) {
                 int node13length = (length == 3) ? 3
                         : (((length % 2 == 0) ? (length / 2)
                         : ((length - 1) / 2) + 2));
