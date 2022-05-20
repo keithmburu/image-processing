@@ -36,15 +36,11 @@ public class QuadTree {
             length = (fileLines != null) ? fileLines.get(0).length : 0;
             width = (fileLines != null) ? fileLines.size() : 0;
 
-            // System.out.println("width = " + width);
-            // System.out.println("length = " + length);
-
             int Rtotal = 0;
             int Gtotal = 0;
             int Btotal = 0;
             for (int line = 0; line < width; line++) {
                 for (int col = 0; col < length-2; col += 3) {
-                    // System.out.println("line = " + line + " col = " + col);
                     pixels++;
                     Rtotal += (!fileLines.get(line)[col].equals("")) ? Integer.parseInt(fileLines.get(line)[col]) : 0;
                     Gtotal += (!fileLines.get(line)[col + 1].equals("")) ? Integer.parseInt(fileLines.get(line)[col + 1]) : 0;
@@ -236,7 +232,6 @@ public class QuadTree {
             }
         }
         double meanSquaredError = squaredError / compressedQT.pixels;
-        // System.out.println(meanSquaredError);
 
         if (meanSquaredError > errthreshold) {
             if (!compressedQT.node1Null) {
@@ -288,7 +283,6 @@ public class QuadTree {
     }
 
     public void edge_detect_helper() {
-        // nodes with higher compression to be set to black
         int threshold = 1;
         if (node1Null && node2Null && node3Null && node4Null) {
             if (pixels > threshold) {
@@ -311,7 +305,6 @@ public class QuadTree {
                         fileLines.get(line)[col] = String.valueOf(newVal);
                         fileLines.get(line)[col+1] = String.valueOf(newVal);
                         fileLines.get(line)[col+2] = String.valueOf(newVal);
-                        // System.out.print(fileLines.get(line)[col] + " " + fileLines.get(line)[col+1] + " " + fileLines.get(line)[col+2] + " ");
                     }
                 }
             } 
@@ -437,10 +430,6 @@ public class QuadTree {
                 }  
             }  
             sb.append(lineA).append(lineB).append('\n');
-
-            // System.out.println(lineA);
-            // System.out.println(lineB);
-            // System.out.println(sb.toString());
         }
         return sb.toString();
     }

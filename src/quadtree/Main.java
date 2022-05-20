@@ -88,11 +88,8 @@ public class Main {
 				} else {
 					String[] lineArr = line.split("\\s+");
 					numbers.addAll(Arrays.asList(lineArr));
-					// System.out.println(Arrays.asList(lineArr));
 				}
 			}
-			// System.out.println(numbers.size() + "\n");
-			// System.exit(13);
 			br.close();
 			String[] fileLine = new String[length];
 			int column = 0;
@@ -100,44 +97,34 @@ public class Main {
 				if (column >= length || i == numbers.size()) {
 					column = 0;
 					fileLines.add(fileLine);
-					// for (int col = 0; col < fileLine.length; col++) {
-					// 	System.out.print(fileLine[col]+ " ");
-					// }
 					fileLine = new String[length];
 				}
 				fileLine[column] = numbers.get(i);
 				column++;
 			}
 		} 
-		// System.out.print(fileLines.size() + " " + fileLines.get(0).length + "\n");
-		// System.exit(12);
 
 		QuadTree QT = new QuadTree(fileLines);
-		// if (outline) {
-		// 	QT.outline(false).toPPM(String.format("../images/input%s.ppm", outlineArg), preface.toString());
-		// } else {
-		// 	QT.toPPM(String.format("../images/input%s.ppm", outlineArg), preface.toString());
-		// }
 		switch(task) {
 			case "All":
 				boolean edgeDetection = false;
 				QT.compress(0.5, edgeDetection, outline).toPPM(String.format("../images/%s-c%s.ppm", outputFilename, outlineArg), preface.toString());
-				QT.edge_detect().toPPM(String.format("../images/%s-e%s.ppm", outputFilename, outlineArg), preface.toString());
-				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g%s.ppm", outputFilename, outlineArg), preface.toString());
-				QT.filter("Negative").toPPM(String.format("../images/%s-f-n%s.ppm", outputFilename, outlineArg), preface.toString());
-				QT.filter("Tint").toPPM(String.format("../images/%s-f-t%s.ppm", outputFilename, outlineArg), preface.toString());
+				QT.edge_detect().toPPM(String.format("../images/%s-e.ppm", outputFilename), preface.toString());
+				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g.ppm", outputFilename), preface.toString());
+				QT.filter("Negative").toPPM(String.format("../images/%s-f-n.ppm", outputFilename), preface.toString());
+				QT.filter("Tint").toPPM(String.format("../images/%s-f-t.ppm", outputFilename), preface.toString());
 				break;
 			case "Compression":
 				edgeDetection = false;
 				QT.compress(0.5, edgeDetection, outline).toPPM(String.format("../images/%s-c%s.ppm", outputFilename, outlineArg), preface.toString());
 				break;
 			case "Edge Detection":
-				QT.edge_detect().toPPM(String.format("../images/%s-e%s.ppm", outputFilename, outlineArg), preface.toString());
+				QT.edge_detect().toPPM(String.format("../images/%s-e.ppm", outputFilename), preface.toString());
 				break;
 			case "Filter":
-				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g%s.ppm", outputFilename, outlineArg), preface.toString());
-				QT.filter("Negative").toPPM(String.format("../images/%s-f-n%s.ppm", outputFilename, outlineArg), preface.toString());
-				QT.filter("Tint").toPPM(String.format("../images/%s-f-t%s.ppm", outputFilename, outlineArg), preface.toString());
+				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g.ppm", outputFilename), preface.toString());
+				QT.filter("Negative").toPPM(String.format("../images/%s-f-n.ppm", outputFilename), preface.toString());
+				QT.filter("Tint").toPPM(String.format("../images/%s-f-t.ppm", outputFilename), preface.toString());
 				break;
 			default:
 				System.out.println("Undefined task!");;
