@@ -1,7 +1,6 @@
 package quadtree;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,8 +17,6 @@ public class Main {
 		StringBuilder preface = new StringBuilder();
 		String inputFilename = "";
 		String outputFilename = "";
-		boolean outline = false;
-		String outlineArg = "";
 
 		for(int i = 0; i < args.length; i++) {
 			if(args[i].equals("-i")) {
@@ -44,9 +41,6 @@ public class Main {
 			} else if(args[i].equals("-f")) {
 				task = "Filter";
 			}
-		}
-		if (outline) {
-			outlineArg = "-t";
 		}
 		if (inputFilename.equals("")) {
 			System.out.println("Input filename not provided!");
@@ -75,6 +69,9 @@ public class Main {
 				} else if (wait < 3) {
 					if (wait == 1) {
 						String[] dims = line.split("\\s+");
+						if (dims.length > 2) {
+							dims = Arrays.copyOfRange(dims, dims.length-2, dims.length);
+						}
 						length = Integer.parseInt(dims[0]) * 3;
 						width = Integer.parseInt(dims[1]);
 					} 
@@ -89,8 +86,8 @@ public class Main {
 			br.close();
 			String[] fileLine = new String[length];
 			int column = 0;
-			for (int i = 0; i < numbers.size(); i++) {
-				if (column >= length || i == numbers.size()) {
+			for (int i = 0; i < (length * width); i++) {
+				if (column >= length || i == (length * width)-1) {
 					column = 0;
 					fileLines.add(fileLine);
 					fileLine = new String[length];
@@ -99,29 +96,44 @@ public class Main {
 				column++;
 			}
 		} 
-
-		QuadTree QT = new QuadTree(fileLines);
+		System.out.println("Input: " + inputFilename);
+		System.out.println("Length: " + length/3 + " " + "Width: " + width);
+		Integer totalPixels = Integer.valueOf(length/3 * width);
+		QuadTree QT = new QuadTree(fileLines, totalPixels);
 		QT.toPPM("../images/input.ppm", preface.toString());
 		switch(task) {
 			case "All":
 				boolean edgeDetection = false;
-				QT.compress(0.05, edgeDetection, false).toPPM(String.format("../images/%s-c.ppm", outputFilename), preface.toString());
-				QT.compress(0.05, edgeDetection, true).toPPM(String.format("../images/%s-c-t.ppm", outputFilename), preface.toString());
+				System.out.println("Compressing with outline...");
+				QT.compress(0.1, edgeDetection, true).toPPM(String.format("../images/%s-c-t.ppm", outputFilename), preface.toString());
+				System.out.println("Compressing without outline...");
+				QT.compress(0.1, edgeDetection, false).toPPM(String.format("../images/%s-c.ppm", outputFilename), preface.toString());
+				System.out.println("Detecting edges...");
 				QT.edge_detect().toPPM(String.format("../images/%s-e.ppm", outputFilename), preface.toString());
+				System.out.println("Applying Grayscale filter...");
 				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g.ppm", outputFilename), preface.toString());
+				System.out.println("Applying Negative filter...");
 				QT.filter("Negative").toPPM(String.format("../images/%s-f-n.ppm", outputFilename), preface.toString());
+				System.out.println("Applying Blue Light filter...");
 				QT.filter("BlueLight").toPPM(String.format("../images/%s-f-b.ppm", outputFilename), preface.toString());
 				break;
 			case "Compression":
 				edgeDetection = false;
-				QT.compress(0.05, edgeDetection, false).toPPM(String.format("../images/%s-c.ppm", outputFilename), preface.toString());
-				QT.compress(0.05, edgeDetection, true).toPPM(String.format("../images/%s-c-t.ppm", outputFilename), preface.toString());				break;
+				System.out.println("Compressing with outline...");
+				QT.compress(0.1, edgeDetection, true).toPPM(String.format("../images/%s-c-t.ppm", outputFilename), preface.toString());
+				System.out.println("Compressing without outline...");
+				QT.compress(0.1, edgeDetection, false).toPPM(String.format("../images/%s-c.ppm", outputFilename), preface.toString());
+				break;
 			case "Edge Detection":
+				System.out.println("Detecting edges...");
 				QT.edge_detect().toPPM(String.format("../images/%s-e.ppm", outputFilename), preface.toString());
 				break;
 			case "Filter":
+				System.out.println("Applying Grayscale filter...");
 				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g.ppm", outputFilename), preface.toString());
+				System.out.println("Applying Negative filter...");
 				QT.filter("Negative").toPPM(String.format("../images/%s-f-n.ppm", outputFilename), preface.toString());
+				System.out.println("Applying Blue Light filter...");
 				QT.filter("BlueLight").toPPM(String.format("../images/%s-f-b.ppm", outputFilename), preface.toString());
 				break;
 			default:

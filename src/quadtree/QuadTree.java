@@ -3,6 +3,7 @@ package quadtree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -12,7 +13,7 @@ public class QuadTree {
     private ArrayList<String[]> fileLines = null;
     private int[] meanColor = new int[]{0, 0, 0};
     private int pixels = 0;
-    private int leaves = pixels;
+    private Integer totalPixels = 0;
     private int length = 0;
     private int width = 0;
     private boolean outline = false;
@@ -26,12 +27,13 @@ public class QuadTree {
     private boolean node4Null = true;
 
 
-    public QuadTree(ArrayList<String[]> fileLines) {
+    public QuadTree(ArrayList<String[]> fileLines, Integer totalPixels) {
         if (fileLines == null) {
             System.out.println("Blank image!");
             System.exit(4);
         }
         else {
+            this.totalPixels = totalPixels;
             this.fileLines = fileLines;
             length = (fileLines != null) ? fileLines.get(0).length : 0;
             width = (fileLines != null) ? fileLines.size() : 0;
@@ -42,9 +44,9 @@ public class QuadTree {
             for (int line = 0; line < width; line++) {
                 for (int col = 0; col < length-2; col += 3) {
                     pixels++;
-                    Rtotal += (!fileLines.get(line)[col].equals("")) ? Integer.parseInt(fileLines.get(line)[col]) : 0;
-                    Gtotal += (!fileLines.get(line)[col + 1].equals("")) ? Integer.parseInt(fileLines.get(line)[col + 1]) : 0;
-                    Btotal += (!fileLines.get(line)[col + 2].equals("")) ? Integer.parseInt(fileLines.get(line)[col + 2]) : 0;
+                    Rtotal += (fileLines.get(line)[col] != null && !fileLines.get(line)[col].equals("")) ? Integer.parseInt(fileLines.get(line)[col]) : 0;
+                    Gtotal += (fileLines.get(line)[col+1] != null && !fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(fileLines.get(line)[col + 1]) : 0;
+                    Btotal += (fileLines.get(line)[col+2] != null && !fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(fileLines.get(line)[col+2]) : 0;
                 }
             }
             int Raverage = (pixels == 0) ? 0 : Rtotal / pixels;
@@ -118,22 +120,21 @@ public class QuadTree {
                     }
                 }
                 if (node1FileLines.size() != 0) {
-                    node1 = new QuadTree(node1FileLines);
+                    node1 = new QuadTree(node1FileLines, totalPixels);
                     node1Null = false;
-                    leaves += 1;
                 }
                 if (node2FileLines.size() != 0) {
-                    node2 = new QuadTree(node2FileLines);
+                    node2 = new QuadTree(node2FileLines, totalPixels);
                     node2Null = false;
                 }
 
                 if (node3FileLines.size() != 0) {
-                    node3 = new QuadTree(node3FileLines);
+                    node3 = new QuadTree(node3FileLines, totalPixels);
                     node3Null = false;
                 }
 
                 if (node4FileLines.size() != 0) {
-                    node4 = new QuadTree(node4FileLines);
+                    node4 = new QuadTree(node4FileLines, totalPixels);
                     node4Null = false;
                 }
             }
@@ -189,9 +190,7 @@ public class QuadTree {
 
 
     public QuadTree compress(double compressionLevel, boolean edgeDetection,    boolean outline) {
-        QuadTree compressedQT = compress_helper(compressionLevel, edgeDetection);
-        System.out.println(compressedQT.leaves + " " + compressedQT.pixels);
-        // System.exit(6);
+        QuadTree compressedQT = compress_helper(compressionLevel, edgeDetection, 0);
         if (outline) {
             return compressedQT.outline();
         } else {
@@ -199,46 +198,42 @@ public class QuadTree {
         }
     }
 
-    public QuadTree compress_helper(double compressionLevel, boolean edgeDetection) {
-        QuadTree compressedQT = new QuadTree(fileLines);
+    public QuadTree compress_helper(double compressionLevel, boolean edgeDetection, int errThreshold) {
+        QuadTree compressedQT = new QuadTree(fileLines, totalPixels);
         if (compressedQT.width == 1 && compressedQT.length == 3) {
             return compressedQT;
         } else {
-            double errthreshold = 100;
             int squaredError = 0;
             
             for (int line = 0; line < compressedQT.width; line++) {
                 for (int col= 0; col < compressedQT.length-2; col+= 3) {
-                    int r = (!compressedQT.fileLines.get(line)[col].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line) [col]) : 0;
-                    int g = (!compressedQT.fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+1]) : 0;
-                    int b = (!compressedQT.fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+2]) : 0;
+                    int r = (compressedQT.fileLines.get(line)[col] != null && !compressedQT.fileLines.get(line)[col].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col]) : 0;
+                    int g = (compressedQT.fileLines.get(line)[col+1] != null && !compressedQT.fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+1]) : 0;
+                    int b = (compressedQT.fileLines.get(line)[col+2] != null && !compressedQT.fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+2]) : 0;
                     squaredError += squared_error(r, g, b);
                 }
             }
             double meanSquaredError = squaredError / compressedQT.pixels;
-            // System.out.println(meanSquaredError);
-            // System.exit(5);
 
-            if (meanSquaredError > errthreshold) {
+            if (totalPixels == pixels) {
+                double temp = meanSquaredError/100;
+                int power = (int) Math.ceil(Math.log10(temp));
+                errThreshold = (int) Math.pow(10.0, power);
+                System.out.println("Mean Squared Error: " + meanSquaredError + " Error Threshold: " + errThreshold);
+            }
+
+            if (meanSquaredError > errThreshold) {
                 if (!compressedQT.node1Null) {
-                    compressedQT.node1 = compressedQT.node1.compress_helper(compressionLevel, edgeDetection);
-                    compressedQT.leaves += compressedQT.node1.leaves;
+                    compressedQT.node1 = compressedQT.node1.compress_helper(compressionLevel, edgeDetection, errThreshold);
                 }
                 if (!compressedQT.node2Null) {
-                    compressedQT.node2 = compressedQT.node2.compress_helper(compressionLevel, edgeDetection);
-                    compressedQT.leaves += compressedQT.node2.leaves;
+                    compressedQT.node2 = compressedQT.node2.compress_helper(compressionLevel, edgeDetection, errThreshold);
                 }
                 if (!compressedQT.node3Null) {
-                    compressedQT.node3 = compressedQT.node3.compress_helper(compressionLevel, edgeDetection);
-                    compressedQT.leaves += compressedQT.node3.leaves;
+                    compressedQT.node3 = compressedQT.node3.compress_helper(compressionLevel, edgeDetection, errThreshold);
                 }
                 if (!compressedQT.node4Null) {
-                    compressedQT.node4 = compressedQT.node4.compress_helper(compressionLevel, edgeDetection);
-                    compressedQT.leaves += compressedQT.node4.leaves;
-                }
-                if (Math.abs(compressedQT.leaves/pixels - compressionLevel) <= 0.01) {
-                    System.out.println("working");
-                    return compressedQT;
+                    compressedQT.node4 = compressedQT.node4.compress_helper(compressionLevel, edgeDetection, errThreshold);
                 }
             } else {
                 if (!edgeDetection) {
@@ -258,7 +253,6 @@ public class QuadTree {
                 compressedQT.node3Null = true;
                 compressedQT.node4 = null;
                 compressedQT.node4Null = true;
-                compressedQT.leaves = 1;
             }
             return compressedQT;
         }
@@ -290,9 +284,9 @@ public class QuadTree {
             } else if (pixels <= threshold) {
                 for (int line = 0; line < width; line++) {
                     for (int col = 0; col < length-2; col+=3) {
-                        int r = (!fileLines.get(line)[col].equals("")) ? Integer.parseInt(fileLines.get(line)[col]) : 0;
-                        int g = (!fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(fileLines.get(line)[col+1]) : 0;
-                        int b = (!fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(fileLines.get(line)[col+2]) : 0;
+                        int r = (fileLines.get(line)[col] != null && !fileLines.get(line)[col].equals("")) ? Integer.parseInt(fileLines.get(line)[col]) : 0;
+                        int g = (fileLines.get(line)[col+1] != null && !fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(fileLines.get(line)[col+1]) : 0;
+                        int b = (fileLines.get(line)[col+2] != null && !fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(fileLines.get(line)[col+2]) : 0;
                         int rDiff = Math.abs(r - meanColor[0]);
                         int gDiff = Math.abs(g - meanColor[1]);
                         int bDiff = Math.abs(b - meanColor[2]);
@@ -326,9 +320,9 @@ public class QuadTree {
         for (int line = 0; line < width; line++) {
             String[] fileLineFilter = new String[length];
             for (int col = 0; col < length-2; col += 3) {
-                int r = (!fileLines.get(line)[col].equals("")) ? Integer.parseInt(fileLines.get(line)[col]) : 0;
-                int g = (!fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(fileLines.get(line)[col+1]) : 0;
-                int b = (!fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(fileLines.get(line)[col+2]) : 0;
+                int r = (fileLines.get(line)[col] != null && !fileLines.get(line)[col].equals("")) ? Integer.parseInt(fileLines.get(line)[col]) : 0;
+                int g = (fileLines.get(line)[col+1] != null && !fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(fileLines.get(line)[col+1]) : 0;
+                int b = (fileLines.get(line)[col+2] != null && !fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(fileLines.get(line)[col+2]) : 0;
                 if (type.equals("Grayscale")) {
                     int val = (int) (0.299 * r + 0.587 * g + 0.114 * b);
                     r = val;
@@ -349,7 +343,7 @@ public class QuadTree {
             }
             fileLinesFilter.add(fileLineFilter);
         }
-        QuadTree filteredQT = new QuadTree(fileLinesFilter);
+        QuadTree filteredQT = new QuadTree(fileLinesFilter, totalPixels);
         return filteredQT;
     }
 
@@ -359,7 +353,7 @@ public class QuadTree {
         writer.write(preface);
         try {
             writer.write(toPPM_helper());
-            System.out.println("Written to " + filename);
+            System.out.println("Written to " + filename + "\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
