@@ -44,10 +44,6 @@ public class Main {
 			} else if(args[i].equals("-f")) {
 				task = "Filter";
 			}
-			if (args[i].equals("-t")) {
-				//indicates that output images should have the quadtree outlined
-				outline = true;
-			}
 		}
 		if (outline) {
 			outlineArg = "-t";
@@ -105,26 +101,28 @@ public class Main {
 		} 
 
 		QuadTree QT = new QuadTree(fileLines);
+		QT.toPPM("../images/input.ppm", preface.toString());
 		switch(task) {
 			case "All":
 				boolean edgeDetection = false;
-				QT.compress(0.5, edgeDetection, outline).toPPM(String.format("../images/%s-c%s.ppm", outputFilename, outlineArg), preface.toString());
+				QT.compress(0.05, edgeDetection, false).toPPM(String.format("../images/%s-c.ppm", outputFilename), preface.toString());
+				QT.compress(0.05, edgeDetection, true).toPPM(String.format("../images/%s-c-t.ppm", outputFilename), preface.toString());
 				QT.edge_detect().toPPM(String.format("../images/%s-e.ppm", outputFilename), preface.toString());
 				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g.ppm", outputFilename), preface.toString());
 				QT.filter("Negative").toPPM(String.format("../images/%s-f-n.ppm", outputFilename), preface.toString());
-				QT.filter("BlueLight").toPPM(String.format("../images/%s-f-t.ppm", outputFilename), preface.toString());
+				QT.filter("BlueLight").toPPM(String.format("../images/%s-f-b.ppm", outputFilename), preface.toString());
 				break;
 			case "Compression":
 				edgeDetection = false;
-				QT.compress(0.5, edgeDetection, outline).toPPM(String.format("../images/%s-c%s.ppm", outputFilename, outlineArg), preface.toString());
-				break;
+				QT.compress(0.05, edgeDetection, false).toPPM(String.format("../images/%s-c.ppm", outputFilename), preface.toString());
+				QT.compress(0.05, edgeDetection, true).toPPM(String.format("../images/%s-c-t.ppm", outputFilename), preface.toString());				break;
 			case "Edge Detection":
 				QT.edge_detect().toPPM(String.format("../images/%s-e.ppm", outputFilename), preface.toString());
 				break;
 			case "Filter":
 				QT.filter("Grayscale").toPPM(String.format("../images/%s-f-g.ppm", outputFilename), preface.toString());
 				QT.filter("Negative").toPPM(String.format("../images/%s-f-n.ppm", outputFilename), preface.toString());
-				QT.filter("BlueLight").toPPM(String.format("../images/%s-f-t.ppm", outputFilename), preface.toString());
+				QT.filter("BlueLight").toPPM(String.format("../images/%s-f-b.ppm", outputFilename), preface.toString());
 				break;
 			default:
 				System.out.println("Undefined task!");;

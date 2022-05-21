@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 
-public class QuadTree {
+public class QuadTree { 
 
     private ArrayList<String[]> fileLines = null;
     private int[] meanColor = new int[]{0, 0, 0};
     private int pixels = 0;
+    private int leaves = pixels;
     private int length = 0;
     private int width = 0;
     private boolean outline = false;
@@ -28,7 +29,7 @@ public class QuadTree {
     public QuadTree(ArrayList<String[]> fileLines) {
         if (fileLines == null) {
             System.out.println("Blank image!");
-            System.exit(9);
+            System.exit(4);
         }
         else {
             this.fileLines = fileLines;
@@ -116,36 +117,26 @@ public class QuadTree {
                         node4FileLine = new String[node24length];
                     }
                 }
-                if (node1FileLines.size() == 0) {
-                    node1 = null;
-                } else {
+                if (node1FileLines.size() != 0) {
                     node1 = new QuadTree(node1FileLines);
+                    node1Null = false;
+                    leaves += 1;
                 }
-
-                if (node2FileLines.size() == 0) {
-                    node2 = null;
-                } else {
-                    if (node2FileLines.size() == 0) {
-                    }
+                if (node2FileLines.size() != 0) {
                     node2 = new QuadTree(node2FileLines);
+                    node2Null = false;
                 }
 
-                if (node3FileLines.size() == 0) {
-                    node3 = null;
-                } else {
+                if (node3FileLines.size() != 0) {
                     node3 = new QuadTree(node3FileLines);
+                    node3Null = false;
                 }
 
-                if (node4FileLines.size() == 0) {
-                    node4 = null;
-                } else {
+                if (node4FileLines.size() != 0) {
                     node4 = new QuadTree(node4FileLines);
+                    node4Null = false;
                 }
             }
-            node1Null = (node1 == null);
-            node2Null = (node2 == null);
-            node3Null = (node3 == null);
-            node4Null = (node4 == null);
         }
     }
 
@@ -199,6 +190,8 @@ public class QuadTree {
 
     public QuadTree compress(double compressionLevel, boolean edgeDetection,    boolean outline) {
         QuadTree compressedQT = compress_helper(compressionLevel, edgeDetection);
+        System.out.println(compressedQT.leaves + " " + compressedQT.pixels);
+        // System.exit(6);
         if (outline) {
             return compressedQT.outline();
         } else {
@@ -210,55 +203,65 @@ public class QuadTree {
         QuadTree compressedQT = new QuadTree(fileLines);
         if (compressedQT.width == 1 && compressedQT.length == 3) {
             return compressedQT;
-        } 
-
-        // if (Math.abs(1/pixels - compressionLevel) <=) {}
-        double errthreshold = 100;
-        int squaredError = 0;
-        
-        for (int line = 0; line < compressedQT.width; line++) {
-            for (int col= 0; col < compressedQT.length-2; col+= 3) {
-                int r = (!compressedQT.fileLines.get(line)[col].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line) [col]) : 0;
-                int g = (!compressedQT.fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+1]) : 0;
-                int b = (!compressedQT.fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+2]) : 0;
-                squaredError += squared_error(r, g, b);
-            }
-        }
-        double meanSquaredError = squaredError / compressedQT.pixels;
-
-        if (meanSquaredError > errthreshold) {
-            if (!compressedQT.node1Null) {
-                compressedQT.node1 = compressedQT.node1.compress_helper(compressionLevel, edgeDetection);
-            }
-            if (!compressedQT.node2Null) {
-                compressedQT.node2 = compressedQT.node2.compress_helper(compressionLevel, edgeDetection);
-            }
-            if (!compressedQT.node3Null) {
-                compressedQT.node3 = compressedQT.node3.compress_helper(compressionLevel, edgeDetection);
-            }
-            if (!compressedQT.node4Null) {
-                compressedQT.node4 = compressedQT.node4.compress_helper(compressionLevel, edgeDetection);
-            }
         } else {
-            if (!edgeDetection) {
-                for (int line = 0; line < compressedQT.width; line++) {
-                    for (int col = 0; col < compressedQT.length-2; col += 3) {
-                        compressedQT.fileLines.get(line)[col] = String.valueOf(meanColor[0]);
-                        compressedQT.fileLines.get(line)[col+1] = String.valueOf(meanColor[1]);
-                        compressedQT.fileLines.get(line)[col+2] = String.valueOf(meanColor[2]);
-                    }
+            double errthreshold = 100;
+            int squaredError = 0;
+            
+            for (int line = 0; line < compressedQT.width; line++) {
+                for (int col= 0; col < compressedQT.length-2; col+= 3) {
+                    int r = (!compressedQT.fileLines.get(line)[col].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line) [col]) : 0;
+                    int g = (!compressedQT.fileLines.get(line)[col+1].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+1]) : 0;
+                    int b = (!compressedQT.fileLines.get(line)[col+2].equals("")) ? Integer.parseInt(compressedQT.fileLines.get(line)[col+2]) : 0;
+                    squaredError += squared_error(r, g, b);
                 }
             }
-            compressedQT.node1 = null;
-            compressedQT.node1Null = true;
-            compressedQT.node2 = null;
-            compressedQT.node2Null = true;
-            compressedQT.node3 = null;
-            compressedQT.node3Null = true;
-            compressedQT.node4 = null;
-            compressedQT.node4Null = true;
+            double meanSquaredError = squaredError / compressedQT.pixels;
+            // System.out.println(meanSquaredError);
+            // System.exit(5);
+
+            if (meanSquaredError > errthreshold) {
+                if (!compressedQT.node1Null) {
+                    compressedQT.node1 = compressedQT.node1.compress_helper(compressionLevel, edgeDetection);
+                    compressedQT.leaves += compressedQT.node1.leaves;
+                }
+                if (!compressedQT.node2Null) {
+                    compressedQT.node2 = compressedQT.node2.compress_helper(compressionLevel, edgeDetection);
+                    compressedQT.leaves += compressedQT.node2.leaves;
+                }
+                if (!compressedQT.node3Null) {
+                    compressedQT.node3 = compressedQT.node3.compress_helper(compressionLevel, edgeDetection);
+                    compressedQT.leaves += compressedQT.node3.leaves;
+                }
+                if (!compressedQT.node4Null) {
+                    compressedQT.node4 = compressedQT.node4.compress_helper(compressionLevel, edgeDetection);
+                    compressedQT.leaves += compressedQT.node4.leaves;
+                }
+                if (Math.abs(compressedQT.leaves/pixels - compressionLevel) <= 0.01) {
+                    System.out.println("working");
+                    return compressedQT;
+                }
+            } else {
+                if (!edgeDetection) {
+                    for (int line = 0; line < compressedQT.width; line++) {
+                        for (int col = 0; col < compressedQT.length-2; col += 3) {
+                            compressedQT.fileLines.get(line)[col] = String.valueOf(meanColor[0]);
+                            compressedQT.fileLines.get(line)[col+1] = String.valueOf(meanColor[1]);
+                            compressedQT.fileLines.get(line)[col+2] = String.valueOf(meanColor[2]);
+                        }
+                    }
+                }
+                compressedQT.node1 = null;
+                compressedQT.node1Null = true;
+                compressedQT.node2 = null;
+                compressedQT.node2Null = true;
+                compressedQT.node3 = null;
+                compressedQT.node3Null = true;
+                compressedQT.node4 = null;
+                compressedQT.node4Null = true;
+                compressedQT.leaves = 1;
+            }
+            return compressedQT;
         }
-        return compressedQT;
     }
 
 
