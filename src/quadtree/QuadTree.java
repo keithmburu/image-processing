@@ -437,16 +437,16 @@ public class QuadTree {
         sb.append("Outline? ").append(outline).append("\n");
         sb.append("Nodes: ");
         if (!node1Null) {
-            sb.append(" node1 ");
+            sb.append(" Node1 ");
         }
         if (!node2Null) {
-            sb.append(" node2 ");
+            sb.append(" Node2 ");
         }
         if (!node3Null) {
-            sb.append(" node3 ");
+            sb.append(" Node3 ");
         }
         if (!node4Null) {
-            sb.append(" node4 ");
+            sb.append(" Node4 ");
         }
         sb.append("\n");
         return sb.toString();
